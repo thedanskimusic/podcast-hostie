@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { generateUploadUrl } from "@/app/actions/upload";
-import jsmediatags from "jsmediatags";
 
 interface AudioUploadZoneProps {
   onUploadSuccess: (audioUrl: string, duration: number) => void;
@@ -26,7 +25,7 @@ export function AudioUploadZone({ onUploadSuccess, onUploadError }: AudioUploadZ
 
   const extractDuration = async (file: File): Promise<number> => {
     return new Promise((resolve, reject) => {
-      // Use audio element to get duration (most reliable method)
+      // Use HTML5 audio element to get duration (most reliable method)
       const audio = document.createElement("audio");
       const objectUrl = URL.createObjectURL(file);
       audio.preload = "metadata";
@@ -35,62 +34,27 @@ export function AudioUploadZone({ onUploadSuccess, onUploadError }: AudioUploadZ
         URL.revokeObjectURL(objectUrl);
       };
       
+      // Set timeout in case metadata never loads
+      const timeout = setTimeout(() => {
+        cleanup();
+        reject(new Error("Timeout extracting duration from file"));
+      }, 10000); // 10 second timeout
+      
       audio.onloadedmetadata = () => {
+        clearTimeout(timeout);
         cleanup();
         if (audio.duration && isFinite(audio.duration) && audio.duration > 0) {
           resolve(Math.round(audio.duration));
         } else {
-          // Try jsmediatags as fallback
-          try {
-            jsmediatags.read(file, {
-              onSuccess: (tag: any) => {
-                // Try different metadata properties
-                const durationSeconds = tag.tags.length || tag.tags.LENGTH || tag.tags.duration || null;
-                if (durationSeconds && typeof durationSeconds === 'number') {
-                  resolve(Math.round(durationSeconds));
-                } else {
-                  reject(new Error("Could not extract duration from file metadata"));
-                }
-              },
-              onError: () => {
-                reject(new Error("Could not extract duration from file"));
-              },
-            });
-          } catch (err) {
-            reject(new Error("Could not extract duration from file"));
-          }
-        }
-      };
-      
-      audio.onerror = () => {
-        cleanup();
-        // Try jsmediatags as fallback
-        try {
-          jsmediatags.read(file, {
-            onSuccess: (tag: any) => {
-              const durationSeconds = tag.tags.length || tag.tags.LENGTH || tag.tags.duration || null;
-              if (durationSeconds && typeof durationSeconds === 'number') {
-                resolve(Math.round(durationSeconds));
-              } else {
-                reject(new Error("Could not extract duration from file metadata"));
-              }
-            },
-            onError: () => {
-              reject(new Error("Could not extract duration from file"));
-            },
-          });
-        } catch (err) {
           reject(new Error("Could not extract duration from file"));
         }
       };
       
-      // Set timeout in case metadata never loads
-      setTimeout(() => {
-        if (audio.readyState < 1) {
-          cleanup();
-          reject(new Error("Timeout extracting duration from file"));
-        }
-      }, 10000); // 10 second timeout
+      audio.onerror = () => {
+        clearTimeout(timeout);
+        cleanup();
+        reject(new Error("Could not extract duration from file"));
+      };
       
       audio.src = objectUrl;
     });
