@@ -16,9 +16,10 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const headersList = await headers();
+  const tenantId = headersList.get("x-tenant-id");
   const host = headersList.get("host") || "localhost:3000";
   
-  const tenant = await getTenantData(host);
+  const tenant = await getTenantData(tenantId || undefined, host);
 
   if (!tenant) {
     return (

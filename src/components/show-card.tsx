@@ -10,6 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
+import { useTenant } from "@/providers/tenant-theme-provider";
 
 interface ShowCardProps {
   show: Show;
@@ -17,9 +18,10 @@ interface ShowCardProps {
 
 export function ShowCard({ show }: ShowCardProps) {
   const router = useRouter();
+  const { tenant } = useTenant();
 
   const handleClick = () => {
-    router.push(`/shows/${show.id}`);
+    router.push(`/tenant/${tenant.id}/shows/${show.id}`);
   };
 
   return (

@@ -8,6 +8,7 @@ export async function GET(
   { params }: { params: { showId: string } }
 ) {
   const { showId } = params;
+  const tenantId = request.headers.get("x-tenant-id");
 
   if (!showId) {
     return NextResponse.json(
@@ -24,6 +25,14 @@ export async function GET(
       .limit(1);
 
     if (show.length === 0) {
+      return NextResponse.json(
+        { error: "Show not found" },
+        { status: 404 }
+      );
+    }
+
+    // Verify tenant isolation - ensure show belongs to the tenant from header
+    if (tenantId && show[0].tenant_id !== tenantId) {
       return NextResponse.json(
         { error: "Show not found" },
         { status: 404 }

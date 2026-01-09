@@ -3,11 +3,17 @@ import { db } from "@/db";
 import { episodes } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
 
+import { NextRequest, NextResponse } from "next/server";
+import { db } from "@/db";
+import { episodes, shows } from "@/db/schema";
+import { eq, desc } from "drizzle-orm";
+
 export async function GET(
   request: NextRequest,
   { params }: { params: { showId: string } }
 ) {
   const { showId } = params;
+  const tenantId = request.headers.get("x-tenant-id");
 
   if (!showId) {
     return NextResponse.json(
@@ -17,6 +23,22 @@ export async function GET(
   }
 
   try {
+    // If tenant ID is provided, verify the show belongs to that tenant
+    if (tenantId) {
+      const show = await db
+        .select()
+        .from(shows)
+        .where(eq(shows.id, showId))
+        .limit(1);
+
+      if (show.length === 0 || show[0].tenant_id !== tenantId) {
+        return NextResponse.json(
+          { error: "Show not found" },
+          { status: 404 }
+        );
+      }
+    }
+
     const episodesList = await db
       .select()
       .from(episodes)
