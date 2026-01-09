@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { TenantThemeProvider } from "@/providers/tenant-theme-provider";
+import { AudioPlayerProvider } from "@/providers/audio-player-provider";
 import { getTenantData } from "@/lib/tenant";
 import "./globals.css";
 
@@ -35,7 +36,9 @@ export default async function RootLayout({
     <html lang="en">
       <body>
         <TenantThemeProvider tenant={tenant}>
-          {children}
+          <AudioPlayerProvider>
+            {children}
+          </AudioPlayerProvider>
         </TenantThemeProvider>
       </body>
     </html>

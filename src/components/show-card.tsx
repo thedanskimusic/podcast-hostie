@@ -1,3 +1,5 @@
+"use client";
+
 import { Show } from "@/lib/types";
 import {
   Card,
@@ -7,14 +9,24 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useRouter } from "next/navigation";
 
 interface ShowCardProps {
   show: Show;
 }
 
 export function ShowCard({ show }: ShowCardProps) {
+  const router = useRouter();
+
+  const handleClick = () => {
+    router.push(`/shows/${show.id}`);
+  };
+
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
+    <Card
+      className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+      onClick={handleClick}
+    >
       {show.cover_image && (
         <div className="aspect-video w-full overflow-hidden">
           <img
