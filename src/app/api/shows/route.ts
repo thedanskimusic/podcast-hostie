@@ -4,8 +4,8 @@ import { shows } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
 export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams;
-  const tenantId = searchParams.get("tenant_id");
+  // Check header first (set by middleware), fall back to query param
+  const tenantId = request.headers.get("x-tenant-id") || request.nextUrl.searchParams.get("tenant_id");
 
   if (!tenantId) {
     return NextResponse.json(
