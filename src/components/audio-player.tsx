@@ -8,11 +8,12 @@ export function AudioPlayer() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [audioSrc, setAudioSrc] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
 
   useEffect(() => {
     const audio = audioRef.current;
-    if (!audio) return;
+    if (!audio || !audioSrc) return;
 
     const updateTime = () => setCurrentTime(audio.currentTime);
     const updateDuration = () => setDuration(audio.duration);
@@ -24,11 +25,11 @@ export function AudioPlayer() {
       audio.removeEventListener("timeupdate", updateTime);
       audio.removeEventListener("loadedmetadata", updateDuration);
     };
-  }, []);
+  }, [audioSrc]);
 
   const togglePlay = () => {
     const audio = audioRef.current;
-    if (!audio) return;
+    if (!audio || !audioSrc) return;
 
     if (isPlaying) {
       audio.pause();
@@ -61,7 +62,8 @@ export function AudioPlayer() {
           onClick={togglePlay}
           size="icon"
           className="shrink-0"
-          style={{ backgroundColor: "var(--brand-primary)" }}
+          disabled={!audioSrc}
+          style={{ backgroundColor: audioSrc ? "var(--brand-primary)" : undefined }}
         >
           {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
         </Button>
@@ -84,7 +86,7 @@ export function AudioPlayer() {
           {formatTime(currentTime)} / {formatTime(duration)}
         </div>
 
-        <audio ref={audioRef} src="" />
+        {audioSrc && <audio ref={audioRef} src={audioSrc} />}
       </div>
     </div>
   );
