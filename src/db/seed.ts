@@ -1,9 +1,17 @@
 import { db } from "./index";
-import { tenants, shows, episodes, users } from "./schema";
+import { tenants, shows, episodes, users, userProgress } from "./schema";
 
 async function seed() {
   try {
     console.log("Seeding database...");
+
+    // Clear existing data in reverse dependency order
+    console.log("Clearing existing data...");
+    await db.delete(userProgress);
+    await db.delete(episodes);
+    await db.delete(shows);
+    await db.delete(users);
+    await db.delete(tenants);
 
     // Insert test tenant
     const tenantId = "550e8400-e29b-41d4-a716-446655440000";
@@ -41,13 +49,14 @@ async function seed() {
       },
     ]);
 
-    // Insert test episodes
+    // Insert test episodes with working audio URLs
+    // Using publicly available test audio files
     await db.insert(episodes).values([
       {
         id: "770e8400-e29b-41d4-a716-446655440001",
         show_id: showId1,
         title: "Introduction to AI",
-        audio_url: "https://example.com/episode1.mp3",
+        audio_url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
         duration_seconds: 1800,
         published_at: new Date(),
       },
@@ -55,7 +64,7 @@ async function seed() {
         id: "770e8400-e29b-41d4-a716-446655440002",
         show_id: showId1,
         title: "Future of Web Development",
-        audio_url: "https://example.com/episode2.mp3",
+        audio_url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
         duration_seconds: 2100,
         published_at: new Date(),
       },
@@ -63,7 +72,7 @@ async function seed() {
         id: "770e8400-e29b-41d4-a716-446655440003",
         show_id: showId2,
         title: "Startup Strategies",
-        audio_url: "https://example.com/episode3.mp3",
+        audio_url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
         duration_seconds: 2400,
         published_at: new Date(),
       },
