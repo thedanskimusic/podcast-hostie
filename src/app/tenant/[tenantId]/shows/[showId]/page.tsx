@@ -102,7 +102,15 @@ export default function ShowDetailPage() {
         </div>
 
         <div className="mt-8">
-          <h2 className="text-2xl font-bold mb-6">Episodes</h2>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold">Episodes</h2>
+            <Button
+              onClick={() => router.push(`/tenant/${tenantId}/episodes/new?showId=${showId}`)}
+              style={{ backgroundColor: "var(--brand-primary)" }}
+            >
+              Add Episode
+            </Button>
+          </div>
           {episodes.length === 0 ? (
             <p className="text-muted-foreground">No episodes available yet.</p>
           ) : (
